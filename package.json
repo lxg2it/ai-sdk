@@ -1,0 +1,68 @@
+{
+  "name": "@lxg2it/ai",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for the Model Router — typed routing tiers, streaming with reasoning, tool execution loops, and Vercel AI SDK integration",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./vercel": {
+      "import": "./dist/vercel.js",
+      "types": "./dist/vercel.d.ts"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "ai",
+    "llm",
+    "model-router",
+    "openai",
+    "anthropic",
+    "sdk",
+    "routing",
+    "streaming"
+  ],
+  "author": "lxg2it",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lxg2it/ai-sdk"
+  },
+  "homepage": "https://api.lxg2it.com",
+  "peerDependencies": {
+    "openai": ">=4.0.0",
+    "zod": ">=3.0.0",
+    "ai": ">=4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "zod": {
+      "optional": true
+    },
+    "ai": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "zod-to-json-schema": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ai": "^4.0.0",
+    "openai": "^4.85.0",
+    "typescript": "^5.4.0",
+    "zod": "^3.24.0"
+  }
+}
