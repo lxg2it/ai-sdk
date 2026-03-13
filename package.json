@@ -37,6 +37,9 @@
   ],
   "author": "lxg2it",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/lxg2it/ai-sdk"
