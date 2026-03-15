@@ -35,6 +35,7 @@
 
 import OpenAI from 'openai';
 import type { ModelRouterConfig, Tier, Prefer, Provider } from './types.js';
+import { createHeaderCapturingFetch, headersToRecord } from './utils.js';
 
 // ─── Types from @ai-sdk/provider ────────────────────────────────────────────
 //
@@ -247,28 +248,6 @@ function convertPromptToOpenAI(
   return messages;
 }
 
-// ─── Header capturing fetch ──────────────────────────────────────────────
-
-function createHeaderCapturingFetch(): {
-  fetch: typeof globalThis.fetch;
-  getLastHeaders: () => Record<string, string | null>;
-} {
-  let lastHeaders: Record<string, string | null> = {};
-
-  const wrappedFetch = async (input: Parameters<typeof globalThis.fetch>[0], init?: RequestInit): Promise<Response> => {
-    const response = await globalThis.fetch(input as Parameters<typeof globalThis.fetch>[0], init);
-    lastHeaders = {
-      'x-model-router-model': response.headers.get('X-Model-Router-Model'),
-      'x-model-router-provider': response.headers.get('X-Model-Router-Provider'),
-      'x-model-router-tier': response.headers.get('X-Model-Router-Tier'),
-      'x-model-router-latency-ms': response.headers.get('X-Model-Router-Latency-Ms'),
-    };
-    return response;
-  };
-
-  return { fetch: wrappedFetch, getLastHeaders: () => ({ ...lastHeaders }) };
-}
-
 // ─── ModelRouterLanguageModel ────────────────────────────────────────────
 
 const FINISH_REASON_MAP: Record<string, LanguageModelV1FinishReason> = {
@@ -325,7 +304,7 @@ class ModelRouterLanguageModel implements LanguageModelV1 {
       ...({ prefer: this.prefer } as Record<string, unknown>),
     } as OpenAI.Chat.ChatCompletionCreateParamsNonStreaming);
 
-    const headers = this.headerCapture.getLastHeaders();
+    const capturedHeaders = this.headerCapture.getLastHeaders();
     const choice = completion.choices[0];
     const message = choice?.message;
 
@@ -343,17 +322,13 @@ class ModelRouterLanguageModel implements LanguageModelV1 {
         completionTokens: completion.usage?.completion_tokens ?? 0,
       },
       rawCall: { rawPrompt: messages, rawSettings: {} },
-      rawResponse: {
-        headers: Object.fromEntries(
-          Object.entries(headers).filter((entry): entry is [string, string] => entry[1] !== null),
-        ),
-      },
+      rawResponse: { headers: headersToRecord(capturedHeaders) },
       providerMetadata: {
         modelRouter: {
-          model: headers['x-model-router-model'] ?? 'unknown',
-          provider: (headers['x-model-router-provider'] ?? 'unknown') as Provider,
-          tier: headers['x-model-router-tier'] ?? this.tier,
-          latency_ms: parseInt(headers['x-model-router-latency-ms'] ?? '0', 10),
+          model: capturedHeaders.model ?? 'unknown',
+          provider: (capturedHeaders.provider ?? 'unknown') as Provider,
+          tier: capturedHeaders.tier ?? this.tier,
+          latency_ms: parseInt(capturedHeaders.latency_ms ?? '0', 10),
         },
       },
     };
@@ -456,7 +431,7 @@ class ModelRouterLanguageModel implements LanguageModelV1 {
             }
 
             if (finishReason) {
-              const headers = headerCapture.getLastHeaders();
+              const capturedHeaders = headerCapture.getLastHeaders();
               controller.enqueue({
                 type: 'finish',
                 finishReason:
@@ -464,10 +439,10 @@ class ModelRouterLanguageModel implements LanguageModelV1 {
                 usage,
                 providerMetadata: {
                   modelRouter: {
-                    model: headers['x-model-router-model'] ?? 'unknown',
-                    provider: headers['x-model-router-provider'] ?? 'unknown',
-                    tier: headers['x-model-router-tier'] ?? tier,
-                    latency_ms: parseInt(headers['x-model-router-latency-ms'] ?? '0', 10),
+                    model: capturedHeaders.model ?? 'unknown',
+                    provider: capturedHeaders.provider ?? 'unknown',
+                    tier: capturedHeaders.tier ?? tier,
+                    latency_ms: parseInt(capturedHeaders.latency_ms ?? '0', 10),
                   },
                 },
               });

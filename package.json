@@ -23,7 +23,11 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src tests"
   },
   "keywords": [
     "ai",
@@ -46,9 +50,9 @@
   },
   "homepage": "https://api.lxg2it.com",
   "peerDependencies": {
+    "ai": ">=4.0.0",
     "openai": ">=4.0.0",
-    "zod": ">=3.0.0",
-    "ai": ">=4.0.0"
+    "zod": ">=3.0.0"
   },
   "peerDependenciesMeta": {
     "zod": {
@@ -61,11 +65,28 @@
   "dependencies": {
     "zod-to-json-schema": "^3.24.1"
   },
+  "vitest": {
+    "environment": "node",
+    "include": ["tests/**/*.test.ts"],
+    "coverage": {
+      "provider": "v8",
+      "include": ["src/**"],
+      "exclude": ["src/index.ts"]
+    }
+  },
+
   "devDependencies": {
+    "@eslint/js": "^9.39.4",
     "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.57.0",
+    "@typescript-eslint/parser": "^8.57.0",
+    "@vitest/coverage-v8": "^4.1.0",
     "ai": "^4.0.0",
+    "eslint": "^9.39.4",
     "openai": "^4.85.0",
     "typescript": "^5.4.0",
+    "typescript-eslint": "^8.57.0",
+    "vitest": "^3.2.4",
     "zod": "^3.24.0"
   }
 }

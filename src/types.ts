@@ -170,7 +170,8 @@ export interface ToolDefinition<TParams = Record<string, unknown>, TResult = unk
 // ─── run() types ───────────────────────────────────────────────────────────
 
 export interface RunOptions extends Omit<ChatOptions, 'tools' | 'tool_choice'> {
-  tools: ToolDefinition[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tools: ToolDefinition<any, any>[];
   /** Stop the loop after this many LLM calls. Default: 10 */
   maxIterations?: number;
   /** What to do when maxIterations is reached: 'error' | 'return'. Default: 'error' */
@@ -232,6 +233,11 @@ export interface ModelRouterConfig {
   defaultPrefer?: Prefer;
   /** Request timeout in milliseconds. Default: 60000 */
   timeout?: number;
+  /**
+   * Maximum number of automatic retries on transient errors (429, 500+).
+   * Default: 2. Set to 0 to disable retries (useful in tests).
+   */
+  maxRetries?: number;
 }
 
 // ─── Error Types ────────────────────────────────────────────────────────────
